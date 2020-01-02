@@ -77,9 +77,9 @@ func (tv TagValue) MarshalJSON() ([]byte, error) {
 			(b >= 'a' && b <= 'z'):
 			result.WriteByte(b)
 		case b == '_':
-			result.WriteString("__")
+			result.WriteString("_")
 		case b == ':':
-			result.WriteString("_.")
+			result.WriteString(".")
 		default:
 			result.WriteString(fmt.Sprintf("_%X", b))
 		}
@@ -93,9 +93,6 @@ const defaultEmptyTagValue = "_-"
 // UnmarshalJSON unmarshals JSON strings coming from OpenTSDB into Go strings
 // by applying the inverse of what is described for the MarshalJSON method.
 func (tv *TagValue) UnmarshalJSON(json []byte) error {
-	escapeLevel := 0 // How many bytes after '_'.
-	var parsedByte byte
-
 	// Might need fewer bytes, but let's avoid realloc.
 	result := bytes.NewBuffer(make([]byte, 0, len(json)-2))
 
@@ -112,52 +109,14 @@ func (tv *TagValue) UnmarshalJSON(json []byte) error {
 			}
 			break
 		}
-		switch escapeLevel {
-		case 0:
-			if b == '_' {
-				escapeLevel = 1
-				continue
-			}
-			result.WriteByte(b)
-		case 1:
-			switch {
+		switch {
 			case b == '_':
 				result.WriteByte('_')
-				escapeLevel = 0
 			case b == '.':
 				result.WriteByte(':')
-				escapeLevel = 0
-			case b == '-':
-				escapeLevel = 0
-			case b >= '0' && b <= '9':
-				parsedByte = (b - 48) << 4
-				escapeLevel = 2
-			case b >= 'A' && b <= 'F': // A-F
-				parsedByte = (b - 55) << 4
-				escapeLevel = 2
 			default:
-				return fmt.Errorf(
-					"illegal escape sequence at byte %d (%c)",
-					i, b,
-				)
+				result.WriteByte(b)
 			}
-		case 2:
-			switch {
-			case b >= '0' && b <= '9':
-				parsedByte += b - 48
-			case b >= 'A' && b <= 'F': // A-F
-				parsedByte += b - 55
-			default:
-				return fmt.Errorf(
-					"illegal escape sequence at byte %d (%c)",
-					i, b,
-				)
-			}
-			result.WriteByte(parsedByte)
-			escapeLevel = 0
-		default:
-			panic("unexpected escape level")
-		}
 	}
 	*tv = TagValue(result.String())
 	return nil
@@ -177,9 +136,9 @@ func toTagValue(tv string) string {
 			(b >= 'a' && b <= 'z'):
 			result.WriteByte(b)
 		case b == '_':
-			result.WriteString("__")
+			result.WriteString("_")
 		case b == ':':
-			result.WriteString("_.")
+			result.WriteString(".")
 		default:
 			result.WriteString(fmt.Sprintf("_%X", b))
 		}

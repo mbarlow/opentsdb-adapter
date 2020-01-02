@@ -32,8 +32,8 @@ import (
 
 	"github.com/go-kit/kit/log/level"
 
-	"github.com/caitong93/opentsdb-adapter/prompb"
 	"github.com/go-kit/kit/log"
+	"github.com/mrroach/opentsdb-adapter-1/prompb"
 	"github.com/prometheus/common/model"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -200,8 +200,9 @@ func (c *Client) Read(req *prompb.ReadRequest) (*prompb.ReadResponse, error) {
 			fmt.Println(string(rawBytes))
 
 			resp, err := ctxhttp.Post(ctx, c.client, c.url+queryEndpoint, contentTypeJSON, bytes.NewBuffer(rawBytes))
+			level.Warn(c.logger).Log(fmt.Sprintf("URL: %v", c.url+queryEndpoint))
 			if err != nil {
-				level.Warn(c.logger).Log("falied to send request to opentsdb")
+				level.Warn(c.logger).Log("failed to send request to opentsdb")
 				errCh <- err
 				return
 			}
@@ -352,12 +353,12 @@ func mergeSamples(a, b []*prompb.Sample) []*prompb.Sample {
 
 func (c *Client) buildQueryReq(q *prompb.Query) (*otdbQueryReq, seriesMatcher, error) {
 	req := otdbQueryReq{
-		Start: q.GetStartTimestampMs() / 1000,
-		End:   q.GetEndTimestampMs() / 1000,
+		Start: q.GetStartTimestampMs(),
+		End:   q.GetEndTimestampMs(),
 	}
 
 	qr := otdbQuery{
-		Aggregator: "none",
+		Aggregator: "sum",
 	}
 	var smatcher seriesMatcher
 	for _, m := range q.Matchers {
@@ -369,6 +370,14 @@ func (c *Client) buildQueryReq(q *prompb.Query) (*otdbQueryReq, seriesMatcher, e
 				// TODO: Figure out how to support these efficiently.
 				return nil, nil, fmt.Errorf("regex, non-equal or regex-non-equal matchers are not supported on the metric name yet")
 			}
+			continue
+		}
+		if m.Name == "__rate" {
+			ro := otdbRateOptions{
+				Counter:    true,
+				DropResets: true,
+			}
+			qr.RateOptions = ro
 			continue
 		}
 		ft := otdbFilter{

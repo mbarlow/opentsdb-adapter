@@ -34,10 +34,10 @@ import (
 	"github.com/prometheus/common/promlog/flag"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/caitong93/opentsdb-adapter/opentsdb"
-	"github.com/caitong93/opentsdb-adapter/prompb"
 	_ "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	_ "github.com/grpc-ecosystem/grpc-gateway/utilities"
+	"github.com/mrroach/opentsdb-adapter-1/opentsdb"
+	"github.com/mrroach/opentsdb-adapter-1/prompb"
 )
 
 type config struct {

@@ -1,9 +1,8 @@
-module github.com/mbarlow/opentsdb-adaptor
+module github.com/mrroach/opentsdb-adapter-1
 
 go 1.13
 
 require (
-	github.com/caitong93/opentsdb-adapter v0.0.0-20171225065133-bb67635ca792
 	github.com/go-kit/kit v0.9.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/snappy v0.0.1

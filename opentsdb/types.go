@@ -22,9 +22,10 @@ type otdbQueryReq struct {
 }
 
 type otdbQuery struct {
-	Metric     TagValue     `json:"metric"`
-	Filters    []otdbFilter `json:"filters"`
-	Aggregator string       `json:"aggregator"`
+	Metric      TagValue        `json:"metric"`
+	Filters     []otdbFilter    `json:"filters,omitempty"`
+	Aggregator  string          `json:"aggregator"`
+	RateOptions otdbRateOptions `json:"rateOptions,omitempty"`
 }
 
 type otdbFilterType string
@@ -41,4 +42,9 @@ type otdbFilter struct {
 	Tagk    string         `json:"tagk"`
 	Filter  string         `json:"filter"`
 	GroupBy bool           `json:"groupBy"`
+}
+
+type otdbRateOptions struct {
+	Counter    bool `json:"counter"`
+	DropResets bool `json:"dropResets"`
 }
